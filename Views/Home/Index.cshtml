@@ -1,0 +1,64 @@
+﻿@model dynamic
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>SignalR group case test</title>
+        <style>
+            div {
+                padding: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <p>
+            This test is to demonstrate the issue of message being stored on case insensitive matching groups topics when using the redis backplane.<br/>
+            I've tested this on version 2.2.0 and some previous versions.<br/>
+            I could not reproduce this with out backplanes but haven´t tried with the other backplanes.
+        </p>
+        <p>
+            New connetions are assigned to GROUP on connection event.
+        </p>
+        <p>
+            Send message to: 
+            <input type="button" name="noMatch" id="noMatch" value="Group"/>
+            <input type="button" name="match" id="match" value="GROUP"/>
+        </p>
+        <div>
+            <ul></ul>
+        </div>
+    </body>
+    <script type="text/javascript" src="~/Scripts/jquery-1.6.4.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.signalR-2.2.0.js"></script>
+    <script>
+        $(document).ready(function () {
+            var conn = $.connection('/rt');
+
+            $("input").click(function (event) {
+                $.get("/home/send", { group: event.target.value, message: event.target.value });
+            });
+
+            conn.received(function (data) {
+                display(data);
+            });
+
+            conn.start().done(function () {
+                display("Connected!");
+            });
+
+            var display = function (message) {
+                var date = new Date();
+
+                console.log(message);
+                console.log(date);
+
+                $("ul").append("<li>" + message + " at " + date.toTimeString());
+            };
+        })
+    </script>
+</html>
